@@ -1,5 +1,6 @@
 /*
- * MOONStroks.js Ver.1.0.0 by fintopo
+ * MOONStroks.js Ver.1.1.0 (2013/09/25) by fintopo
+ * https://github.com/fintopo/MOONStrokes
  * 
  * enchantMOONのストロークデータを管理、加工するライブラリ
  */
@@ -24,6 +25,12 @@ var MOONStrokes = MOONStrokes || {};
     this.p = p;
   };
   _.extend(Point.prototype, {
+    inRange: function(x0, y0, x1, y1){
+      // (x0, y0)-(x1, y1)の範囲に含まれているか調べる
+      // 戻り値： 含まれている場合に true、含まれていない倍に false
+      return (x0 <= this.x) && (this.x <= x1)
+          && (y0 <= this.y) && (this.y <= y1);
+    },
     getData: function(){
       return [this.x, this.y, this.p];
     }
@@ -33,22 +40,50 @@ var MOONStrokes = MOONStrokes || {};
    * MOONStrokes.Stroke 
    */ 
   var Stroke = MOONStrokes.Stroke = function(stroke) {
-    stroke = _(stroke||{}).defaults({
+    stroke = _.extend({
        width: 2.5
       ,color: -1
       ,type: "pen"
       ,data: []
-    });
-    this.info = stroke;
+    }, stroke);
+    //
     this.points = [];
-    var data = this.info.data;
+    var data = stroke.data;
     var count = data.length;
     for (var i=0; i<count; i+=3) {
       this.add(data[i], data[i+1], data[i+2]);
     }
     this._setLength();
+    //
+    this.info = _.extend(stroke, {data: []}); // 初期値保存。dataはクリアしておく
   };
   _.extend(Stroke.prototype, {
+    eraseStrokes: function(x0, y0, x1, y1){
+      // (x0, y0)-(x1, y1)の範囲のポイントを削除し、ストロークを分割する。
+      // 戻り値：分割したストロークの配列
+      var _this = this;
+      var strokes = _(this.points).reduce(function(memo, point){ // 範囲内のポイントを削除し、ストロークを分割する。
+        if (point.inRange(x0, y0, x1, y1)) { // 削除対象
+          memo.add_mode = false; // 次から新しいストロークにする
+        } else { // 残す点
+          if (memo.add_mode) { // 追記モード
+            _(memo.strokes).last().add(point);
+          } else { // 新しいストロークとして追加
+            var stroke = new Stroke(_this.info);
+            stroke.add(point);
+            memo.strokes.push(stroke);
+            memo.add_mode = true;
+          }
+        }
+        return memo;
+      }, {
+        add_mode: false // 追記モード
+        ,strokes: [] // 分割したストローク
+      }).strokes;
+      return _(strokes).reject(function(stroke){ // 不完全なストロークを削除する
+        return (stroke.length < 2);
+      }) ;
+    },
     beautifyLine: function(count){
       // ストロークの美化処理
       // 現在のストロークに対して移動平均を計算する
@@ -128,7 +163,13 @@ var MOONStrokes = MOONStrokes || {};
       }, 0);
     },
     add: function(x, y, p){
-      var ret = this.points.push(new Point(x, y, p));
+      var point;
+      if (_.isNumber(x) && _.isNumber(y) && _.isNumber(p)) {
+        point = new Point(x, y, p);
+      } else if (_.isObject(x)) { // Pointオブジェクトの場合
+        point = x;
+      }
+      var ret = this.points.push(point);
       this._setLength();
       return ret;
     },
@@ -166,7 +207,21 @@ var MOONStrokes = MOONStrokes || {};
     this._setLength();
   };
   _.extend(Paper.prototype, {
+    eraseStrokes: function(x0, y0, x1, y1){
+      // (x0, y0)-(x1, y1)の範囲のストロークを削除する
+      // ストロークの一部が含まれる場合は、ストロークが分割される。
+      this.strokes = _(this.strokes).chain()
+          .map(function(stroke){
+            return stroke.eraseStrokes(x0, y0, x1, y1);
+          })
+          .flatten()
+          .value();
+      this._setLength();
+    },
     rectangle: function(x0, y0, x1, y1, size, options){
+      // (x0, y0)-(x1, y1)で長方形を描画する
+      // size: 筆圧
+      // options: ストロークの初期値
       options = _(options||{}).extend({
         data: []
       });
