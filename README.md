@@ -24,20 +24,37 @@ API MOON.getPaperJSONを呼び出して、展開します。
 
 
 ### id
+
+API MOON.getPaperJSONを呼び出した時のpaperIdです。
+
 ### info
+
+API MOON.getPaperJSONの結果を保持します。
+
 ### strokes
+
+MOONStrokes.Strokeの配列です。
+
 ### length
+### save
 ### eraseStrokes
 ### rectangle
 ### pop
 ### push
-### save
+### moveTo
+
+moveTo(x, y)
+
+ページのストローク全体の位置を(x, y)だけ移動します。
 
 ## MOONStrokes.Stroke 
+
+一本のストロークを表します。
 
 ### info
 ### points
 ### length
+### add
 ### eraseStrokes
 ### beautifyLine
 ### left
@@ -48,17 +65,34 @@ API MOON.getPaperJSONを呼び出して、展開します。
 ### maxStrength
 ### aveStrength
 ### sumStrength
-### add
-### getData
+### moveTo
+
+moveTo(x, y)
+
+ストロークの位置を(x, y)だけ移動します。
 
 ## MOONStrokes.Point
 
-### x
-### y
-### p
-### inRange
-### getData
+ストローク中の各点を表します。
 
+### x
+
+ポイントのX座標です。
+
+### y
+
+ポイントのY座標です。
+
+### p
+
+ポイントの筆圧です。
+
+### inRange
+### moveTo
+
+moveTo(x, y)
+
+ポイントの位置を(x, y)だけ移動します。
 
 ## ライセンス
 
