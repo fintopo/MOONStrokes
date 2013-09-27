@@ -1,5 +1,5 @@
 /*
- * MOONStroks.js Ver.1.2.0 (2013/09/26) by fintopo
+ * MOONStroks.js Ver.1.3.0 (2013/09/27) by fintopo
  * https://github.com/fintopo/MOONStrokes
  * 
  * enchantMOONのストロークデータを管理、加工するライブラリ
@@ -16,6 +16,44 @@ var MOONStrokes = MOONStrokes || {};
     'tail', 'drop', 'last', 'without', 'indexOf', 'shuffle', 'lastIndexOf',
     'isEmpty', 'chain'];
 
+  // 三角関数
+  // 回転時に繰り返し使うので値を保持するようにした。
+  // 90度の時だけ固定値を使用する。（Math関数に誤差があるため）
+  var cos = (function(){
+    var values = {};
+    var values90 = [1, 0, -1, 0];
+    return function(deg){
+      var ret = values[deg];
+      if (!ret) {
+        if (deg % 90 == 0) {
+          var n = Math.floor(deg / 90) % 4;
+          ret = values90[n];
+        } else {
+          ret = Math.cos(deg * (Math.PI / 180));
+        }
+        values[deg] = ret;
+      }
+      return ret;
+    };
+  })();
+  var sin = (function(){
+    var values = {};
+    var values90 = [0, 1, 0, -1];
+    return function(deg){
+      var ret = values[deg];
+      if (!ret) {
+        if (deg % 90 == 0) {
+          var n = Math.floor(deg / 90) % 4;
+          ret = values90[n];
+        } else {
+          ret = Math.sin(deg * (Math.PI / 180));
+        }
+        values[deg] = ret;
+      }
+      return ret;
+    };
+  })();
+
   /* 
    * MOONStrokes.Point 
    */ 
@@ -26,8 +64,23 @@ var MOONStrokes = MOONStrokes || {};
   };
   _.extend(Point.prototype, {
     moveTo: function(x, y) {
+      // 座標を(x, y)だけ移動する。
       this.x += x;
       this.y += y;
+    },
+    rotate: function(x, y, deg) {
+      // (x, y)を中心としてdeg度回転する
+      // deg: 正で右回転、負で左回転
+      this.moveTo(-x, -y);
+      //
+      var cos_deg = cos(deg);
+      var sin_deg = sin(deg);
+      var x0 = this.x;
+      var y0 = this.y;
+      this.x = x0 * cos_deg - y0 * sin_deg;
+      this.y = x0 * sin_deg + y0 * cos_deg;
+      //
+      this.moveTo(x, y);
     },
     inRange: function(x0, y0, x1, y1){
       // (x0, y0)-(x1, y1)の範囲に含まれているか調べる
@@ -63,8 +116,16 @@ var MOONStrokes = MOONStrokes || {};
   };
   _.extend(Stroke.prototype, {
     moveTo: function(x, y) {
+      // ストロークを(x, y)だけ移動する。
       _(this.points).each(function(point){
         return point.moveTo(x, y);
+      });
+    },
+    rotate: function(x, y, deg) {
+      // (x, y)を中心としてdeg度回転する
+      // deg: 正で右回転、負で左回転
+      _(this.points).each(function(point){
+        return point.rotate(x, y, deg);
       });
     },
     eraseStrokes: function(x0, y0, x1, y1){
@@ -217,8 +278,16 @@ var MOONStrokes = MOONStrokes || {};
   };
   _.extend(Paper.prototype, {
     moveTo: function(x, y) {
+      // ストロークを(x, y)だけ移動する。
       _(this.strokes).each(function(stroke){
         return stroke.moveTo(x, y);
+      });
+    },
+    rotate: function(x, y, deg) {
+      // (x, y)を中心としてdeg度回転する
+      // deg: 正で右回転、負で左回転
+      _(this.strokes).each(function(stroke){
+        return stroke.rotate(x, y, deg);
       });
     },
     eraseStrokes: function(x0, y0, x1, y1){
