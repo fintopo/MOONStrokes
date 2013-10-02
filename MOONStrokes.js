@@ -1,5 +1,5 @@
 /*
- * MOONStroks.js Ver.1.3.0 (2013/09/27) by fintopo
+ * MOONStroks.js Ver.1.4.0 (2013/10/02) by fintopo
  * https://github.com/fintopo/MOONStrokes
  * 
  * enchantMOONのストロークデータを管理、加工するライブラリ
@@ -115,6 +115,45 @@ var MOONStrokes = MOONStrokes || {};
     this.info = _.extend(stroke, {data: []}); // 初期値保存。dataはクリアしておく
   };
   _.extend(Stroke.prototype, {
+    leastSquaresMethod: function(mode){
+      // 最小二乗法（1次式）
+      // mode: 計算の向き。falseはx軸基準、trueはy軸基準。
+      var matrix;
+      if (mode) {
+        matrix = this.reduce(function(memo, point){
+          return {
+            a01: memo.a01 + point.y
+            ,a02: memo.a02 + point.x
+            ,a11: memo.a11 + point.y * point.y
+            ,a12: memo.a12 + point.y * point.x
+          };
+        }, {
+          a01: 0
+          ,a02: 0
+          ,a11: 0
+          ,a12: 0
+        });
+      } else {
+        matrix = this.reduce(function(memo, point){
+          return {
+            a01: memo.a01 + point.x
+            ,a02: memo.a02 + point.y
+            ,a11: memo.a11 + point.x * point.x
+            ,a12: memo.a12 + point.x * point.y
+          };
+        }, {
+          a01: 0
+          ,a02: 0
+          ,a11: 0
+          ,a12: 0
+        });
+      }
+      //
+      return {
+         b: (matrix.a02 * matrix.a11 - matrix.a01 * matrix.a12) / (this.length * matrix.a11 - matrix.a01 * matrix.a01)
+        ,a: (this.length * matrix.a12 - matrix.a01 * matrix.a02) / (this.length * matrix.a11 - matrix.a01 * matrix.a01)
+      };
+    },
     moveTo: function(x, y) {
       // ストロークを(x, y)だけ移動する。
       _(this.points).each(function(point){
