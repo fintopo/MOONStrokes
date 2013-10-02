@@ -3,6 +3,10 @@ MOONStrokes
 
 enchantMOONのストロークデータを管理、加工するライブラリ
 
+## 使用ライブラリ
+
+[Underscore.js](http://underscorejs.org/)
+
 ## MOONStrokes.Page
 
 ページを管理するオブジェクトです。
@@ -36,7 +40,13 @@ API MOON.getPaperJSONの結果を保持します。
 MOONStrokes.Strokeの配列です。
 
 ### length
+
+ストロークの数
+
 ### save
+
+API MOON.setPaperJSONを呼び出してストロークを書き込みます。
+
 ### eraseStrokes
 ### rectangle
 ### pop
@@ -47,29 +57,75 @@ moveTo(x, y)
 
 ページのストローク全体の位置を(x, y)だけ移動します。
 
+### rotate
+
+rotate(x, y, deg)
+
+(x, y)を中心としてdeg度回転する
+deg: 正で右回転、負で左回転
+
+
 ## MOONStrokes.Stroke 
 
 一本のストロークを表します。
 
 ### info
 ### points
+
+MOONStrokes.Pointの配列です。
+
 ### length
+
+点の数
+
 ### add
 ### eraseStrokes
 ### beautifyLine
 ### left
+
+ストロークの左端の座標を返します。
+
 ### right
+
+ストロークの右端の座標を返します。
+
 ### top
+
+ストロークの上端の座標を返します。
+
 ### bottom
+
+ストロークの下端の座標を返します。
+
 ### minStrength
+
+ストローク中の筆圧の最小値を返します。
+
 ### maxStrength
+
+ストローク中の筆圧の最大値を返します。
+
 ### aveStrength
+
+ストローク中の筆圧の平均値を返します。
+
 ### sumStrength
+
+ストローク中の筆圧の合計値を返します。
+
 ### moveTo
 
 moveTo(x, y)
 
 ストロークの位置を(x, y)だけ移動します。
+
+### rotate
+
+rotate(x, y, deg)
+
+(x, y)を中心としてdeg度回転する
+deg: 正で右回転、負で左回転
+
 
 ## MOONStrokes.Point
 
@@ -94,6 +150,13 @@ moveTo(x, y)
 
 ポイントの位置を(x, y)だけ移動します。
 
+### rotate
+
+rotate(x, y, deg)
+
+(x, y)を中心としてdeg度回転する
+deg: 正で右回転、負で左回転
+      
 ## ライセンス
 
 MIT License
