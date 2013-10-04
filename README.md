@@ -81,6 +81,24 @@ MOONStrokes.Pointの配列です。
 ### add
 ### eraseStrokes
 ### beautifyLine
+
+### leastSquaresMethod
+
+leastSquaresMethod(mode)
+
+ストロークのPointから最小二乗法で一次式を得ます。
+
++ mode:
+      計算の向き。falseはx軸基準、trueはy軸基準。
+
+戻り値は、下記の値を持つオブジェクトです。
+
++ a:
+      傾き
++ b:
+      切片
+
+
 ### left
 
 ストロークの左端の座標を返します。
