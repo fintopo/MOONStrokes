@@ -64,6 +64,12 @@ rotate(x, y, deg)
 (x, y)を中心としてdeg度回転する
 deg: 正で右回転、負で左回転
 
+### enlarge
+
+enlarge(rate)
+
+ページ全体を拡大します。
+rateは拡大率です。1未満で縮小になります。
 
 ## MOONStrokes.Stroke 
 
@@ -144,6 +150,12 @@ rotate(x, y, deg)
 (x, y)を中心としてdeg度回転する
 deg: 正で右回転、負で左回転
 
+### enlarge
+
+enlarge(rate)
+
+ストロークを拡大します。
+rateは拡大率です。1未満で縮小になります。
 
 ## MOONStrokes.Point
 
@@ -175,6 +187,14 @@ rotate(x, y, deg)
 (x, y)を中心としてdeg度回転する
 deg: 正で右回転、負で左回転
       
+### enlarge
+
+enlarge(rate)
+
+ポイントを拡大します。
+rateは拡大率です。1未満で縮小になります。
+筆圧も同じ割合で変化します。
+
 ## ライセンス
 
 MIT License
