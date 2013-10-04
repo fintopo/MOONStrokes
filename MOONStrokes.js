@@ -1,5 +1,5 @@
 /*
- * MOONStroks.js Ver.1.4.0 (2013/10/02) by fintopo
+ * MOONStroks.js Ver.1.5.0 (2013/10/04) by fintopo
  * https://github.com/fintopo/MOONStrokes
  * 
  * enchantMOONのストロークデータを管理、加工するライブラリ
@@ -63,6 +63,12 @@ var MOONStrokes = MOONStrokes || {};
     this.p = p;
   };
   _.extend(Point.prototype, {
+    enlarge: function(rate) {
+      // 大きさをrate倍にする
+      this.x *= rate;
+      this.y *= rate;
+      this.p *= rate;
+    },
     moveTo: function(x, y) {
       // 座標を(x, y)だけ移動する。
       this.x += x;
@@ -153,6 +159,12 @@ var MOONStrokes = MOONStrokes || {};
          b: (matrix.a02 * matrix.a11 - matrix.a01 * matrix.a12) / (this.length * matrix.a11 - matrix.a01 * matrix.a01)
         ,a: (this.length * matrix.a12 - matrix.a01 * matrix.a02) / (this.length * matrix.a11 - matrix.a01 * matrix.a01)
       };
+    },
+    enlarge: function(rate) {
+      // 大きさをrate倍にする
+      _(this.points).each(function(point){
+        return point.enlarge(rate);
+      });
     },
     moveTo: function(x, y) {
       // ストロークを(x, y)だけ移動する。
@@ -316,6 +328,16 @@ var MOONStrokes = MOONStrokes || {};
     this._setLength();
   };
   _.extend(Paper.prototype, {
+    enlarge: function(rate) {
+      // 大きさをrate倍にする
+      var w = this.info.width * (rate - 1) / 2;
+      var h = this.info.height * (rate - 1) / 2;
+console.log(w, h);
+      _(this.strokes).each(function(stroke){
+        return stroke.enlarge(rate);
+      });
+      this.moveTo(-w, -h);
+    },
     moveTo: function(x, y) {
       // ストロークを(x, y)だけ移動する。
       _(this.strokes).each(function(stroke){
