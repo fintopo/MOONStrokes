@@ -1,5 +1,5 @@
 /*
- * MOONStroks.js Ver.1.5.0 (2013/10/04) by fintopo
+ * MOONStroks.js Ver.1.6.0 (2013/10/10) by fintopo
  * https://github.com/fintopo/MOONStrokes
  * 
  * enchantMOONのストロークデータを管理、加工するライブラリ
@@ -121,43 +121,51 @@ var MOONStrokes = MOONStrokes || {};
     this.info = _.extend(stroke, {data: []}); // 初期値保存。dataはクリアしておく
   };
   _.extend(Stroke.prototype, {
-    leastSquaresMethod: function(mode){
-      // 最小二乗法（1次式）
-      // mode: 計算の向き。falseはx軸基準、trueはy軸基準。
-      var matrix;
-      if (mode) {
-        matrix = this.reduce(function(memo, point){
-          return {
-            a01: memo.a01 + point.y
-            ,a02: memo.a02 + point.x
-            ,a11: memo.a11 + point.y * point.y
-            ,a12: memo.a12 + point.y * point.x
-          };
-        }, {
-          a01: 0
-          ,a02: 0
-          ,a11: 0
-          ,a12: 0
-        });
-      } else {
-        matrix = this.reduce(function(memo, point){
-          return {
-            a01: memo.a01 + point.x
-            ,a02: memo.a02 + point.y
-            ,a11: memo.a11 + point.x * point.x
-            ,a12: memo.a12 + point.x * point.y
-          };
-        }, {
-          a01: 0
-          ,a02: 0
-          ,a11: 0
-          ,a12: 0
-        });
-      }
+    getInclinationLSM: function(){
+      // ストロークの傾きを得る
+      var LSM = function(mode) {
+        // 最小二乗法で1次式を求め、ストロークの傾きとする
+        // mode: 計算の向き。falseはx軸基準、trueはy軸基準。
+        var matrix;
+        if (mode) {
+          matrix = this.reduce(function(memo, point){
+            return {
+              a01: memo.a01 + point.y
+              ,a02: memo.a02 + point.x
+              ,a11: memo.a11 + point.y * point.y
+              ,a12: memo.a12 + point.y * point.x
+            };
+          }, {
+            a01: 0
+            ,a02: 0
+            ,a11: 0
+            ,a12: 0
+          });
+        } else {
+          matrix = this.reduce(function(memo, point){
+            return {
+              a01: memo.a01 + point.x
+              ,a02: memo.a02 + point.y
+              ,a11: memo.a11 + point.x * point.x
+              ,a12: memo.a12 + point.x * point.y
+            };
+          }, {
+            a01: 0
+            ,a02: 0
+            ,a11: 0
+            ,a12: 0
+          });
+        }
+        //
+        return {
+          b: (matrix.a02 * matrix.a11 - matrix.a01 * matrix.a12) / (this.length * matrix.a11 - matrix.a01 * matrix.a01)
+          ,a: (this.length * matrix.a12 - matrix.a01 * matrix.a02) / (this.length * matrix.a11 - matrix.a01 * matrix.a01)
+        };
+      };
       //
       return {
-         b: (matrix.a02 * matrix.a11 - matrix.a01 * matrix.a12) / (this.length * matrix.a11 - matrix.a01 * matrix.a01)
-        ,a: (this.length * matrix.a12 - matrix.a01 * matrix.a02) / (this.length * matrix.a11 - matrix.a01 * matrix.a01)
+        xAxis: LSM(false)
+        ,yAxis: LSM(true)
       };
     },
     enlarge: function(rate) {
@@ -165,12 +173,16 @@ var MOONStrokes = MOONStrokes || {};
       _(this.points).each(function(point){
         return point.enlarge(rate);
       });
+      //
+      return this;
     },
     moveTo: function(x, y) {
       // ストロークを(x, y)だけ移動する。
       _(this.points).each(function(point){
         return point.moveTo(x, y);
       });
+      //
+      return this;
     },
     rotate: function(x, y, deg) {
       // (x, y)を中心としてdeg度回転する
@@ -178,6 +190,8 @@ var MOONStrokes = MOONStrokes || {};
       _(this.points).each(function(point){
         return point.rotate(x, y, deg);
       });
+      //
+      return this;
     },
     eraseStrokes: function(x0, y0, x1, y1){
       // (x0, y0)-(x1, y1)の範囲のポイントを削除し、ストロークを分割する。
@@ -205,8 +219,8 @@ var MOONStrokes = MOONStrokes || {};
         return (stroke.length < 2);
       }) ;
     },
-    beautifyLine: function(count){
-      // ストロークの美化処理
+    smooth: function(count){
+      // ストロークの平滑化処理
       // 現在のストロークに対して移動平均を計算する
       // count: 移動平均を計算する要素数。前後count個に対して計算する
       var _this = this;
@@ -242,6 +256,8 @@ var MOONStrokes = MOONStrokes || {};
         add_point();
         buffers.shift();
       });
+      //
+      return this;
     },
     left: function(){
       return _(this.points).min(function(point){
@@ -332,7 +348,6 @@ var MOONStrokes = MOONStrokes || {};
       // 大きさをrate倍にする
       var w = this.info.width * (rate - 1) / 2;
       var h = this.info.height * (rate - 1) / 2;
-console.log(w, h);
       _(this.strokes).each(function(stroke){
         return stroke.enlarge(rate);
       });
@@ -375,6 +390,19 @@ console.log(w, h);
       stroke.add(x1, y1, size);
       stroke.add(x1, y0, size);
       stroke.add(x0, y0, size);
+      this.push(stroke);
+      return stroke;
+    },
+    line: function(x0, y0, x1, y1, size, options){
+      // (x0, y0)-(x1, y1)の直線を描画する
+      // size: 筆圧
+      // options: ストロークの初期値
+      options = _(options||{}).extend({
+        data: []
+      });
+      var stroke = new Stroke(options);
+      stroke.add(x0, y0, size);
+      stroke.add(x1, y1, size);
       this.push(stroke);
       return stroke;
     },
