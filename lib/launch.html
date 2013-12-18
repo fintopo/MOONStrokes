@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript">
+        var Sticker={create:function(){return {register:function(){this.ontap();}};}};
+        var main, libs, count = 0;
+
+        function importJS(l, m) {
+            main=m;
+            libs=l;
+        }
+
+        function scriptOnload() {
+            count++;
+            if (count<libs.length) {
+                loadScript();
+            } else {
+                main();
+            }
+        }
+
+        function loadScript() {
+            var script=document.createElement('script');
+            script.src=libs[count];
+            script.type='text/javascript';
+            script.language='javascript';
+            script.onload=scriptOnload;
+            document.body.appendChild(script);
+        }
+
+        function onload() {
+            loadScript();
+        }
+    </script>
+    <script src='hack-debug.js'></script>
+</head>
+<body onload="onload()" bgcolor="#000000">
+</body>
+</html>
