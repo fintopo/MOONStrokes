@@ -3,10 +3,6 @@ MOONStrokes
 
 enchantMOONのストロークデータを管理、加工するライブラリ
 
-## 使用ライブラリ
-
-[Underscore.js](http://underscorejs.org/)
-
 ## MOONStrokes.Page
 
 ページを管理するオブジェクトです。
@@ -198,3 +194,8 @@ rateは拡大率です。1未満で縮小になります。
 ## ライセンス
 
 MIT License
+
+## 更新履歴
+- Ver.1.8.0(2013/12/15)
+ - MOONBlockプラグイン化した
+ - underscore.jsを使用しないようにした
