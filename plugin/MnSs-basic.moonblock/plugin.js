@@ -70,6 +70,7 @@ enchant.block.blocks.strokesBasic.transformStroke = enchant.Class.create(enchant
         this.addLabel('ストロークの');
         this.addSelectForm({
           '平滑化 強度': 'smooth'
+          ,'凸凹化 強度': 'rough'
           ,'回転 角度': 'rotate'
           ,'拡大 倍率': 'enlarge'
           ,'太さを変える': 'setWidth'
@@ -77,7 +78,17 @@ enchant.block.blocks.strokesBasic.transformStroke = enchant.Class.create(enchant
         this.addReceptor('property number', 'count');
         this.addBR();
         this.iteratize();
-        this.script = 'stroke.<% op %>(<% count %>);';
+    }
+    ,script: {
+      get: function(){
+        var op = this.getSentence('op');
+        var count = this.getSentence('count');
+        if (op == 'rough') {
+          return 'stroke.'+op+'('+count+','+count+','+count+','+count+','+count+','+count+');';
+        } else {
+          return 'stroke.'+op+'('+count+');';
+        }
+      }
     }
 });
 
