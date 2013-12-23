@@ -126,7 +126,7 @@ enchant.block.blocks.strokesBasic.getStrokeRect = enchant.Class.create(enchant.b
         }, 'op');
         this.addBR();
         this.iteratize();
-        this.script = '<% a %> = stroke.<% op %>());';
+        this.script = '<% a %> = stroke.<% op %>();';
     }
 });
 
